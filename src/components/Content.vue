@@ -142,7 +142,8 @@
       formRef.value?.validate((errors) => {
         if (!errors) {
           chrome.storage.local
-            .set({ [dynamicForm.name]: JSON.stringify(dynamicForm.urls) })
+            // .set({ [dynamicForm.name]: JSON.stringify(dynamicForm.urls) })
+            .set({ [dynamicForm.name]: toRaw(dynamicForm.urls) })
             .then(() => {
               message.success(isNew.value ? '保存成功' : '修改成功');
               dynamicForm.name = '';
@@ -174,7 +175,8 @@
     selectValue.value = val;
     chrome.storage.local.get(val, (result) => {
       dynamicForm.name = val;
-      dynamicForm.urls = JSON.parse(result[val]);
+      // dynamicForm.urls = JSON.parse(result[val]);
+      dynamicForm.urls = result[val];
       duplicateCheck();
     });
   }
