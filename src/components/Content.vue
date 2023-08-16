@@ -125,7 +125,6 @@
 
   function handleDeleteUrl(index: number) {
     if (dynamicForm.urls.length === 1) return;
-    console.log(dynamicForm.urls);
     dynamicForm.urls.splice(index, 1);
   }
 
@@ -142,14 +141,14 @@
     } else {
       formRef.value?.validate((errors) => {
         if (!errors) {
-          console.log(dynamicForm.urls);
-
-          chrome.storage.local.set({ [dynamicForm.name]: dynamicForm.urls }).then(() => {
-            message.success(isNew.value ? '保存成功' : '修改成功');
-            dynamicForm.name = '';
-            isNew.value = true;
-            getOptions();
-          });
+          chrome.storage.local
+            .set({ [dynamicForm.name]: JSON.stringify(dynamicForm.urls) })
+            .then(() => {
+              message.success(isNew.value ? '保存成功' : '修改成功');
+              dynamicForm.name = '';
+              isNew.value = true;
+              getOptions();
+            });
         } else {
           message.error('请检查是否为空、格式是否正确');
         }
@@ -175,9 +174,7 @@
     selectValue.value = val;
     chrome.storage.local.get(val, (result) => {
       dynamicForm.name = val;
-      dynamicForm.urls = result[val];
-      console.log(dynamicForm.urls);
-
+      dynamicForm.urls = JSON.parse(result[val]);
       duplicateCheck();
     });
   }
