@@ -16,7 +16,7 @@
         <div class="flex">
           <NSelect
             v-model:value="selectValue"
-            :options="options"
+            :options="urlListOptions"
             class="!w-80 mr-3"
             clearable
             @update:value="handleSelect"
@@ -75,7 +75,7 @@
 
   const message = useMessage();
   const selectValue = ref<null | string>(null);
-  const options = ref<SelectOption[]>([]);
+  const urlListOptions = ref<SelectOption[]>([]);
   const dynamicForm = reactive({
     name: '',
     urls: [{ url: '' }],
@@ -108,7 +108,7 @@
   function getOptions() {
     chrome.storage.local.get(null, (result) => {
       const keys = Object.keys(result);
-      options.value = keys.map((key) => ({ label: key, value: key }));
+      urlListOptions.value = keys.map((key) => ({ label: key, value: key }));
     });
   }
 
@@ -137,7 +137,6 @@
   function handleSave() {
     if (!dynamicForm.name) {
       message.error('请输入列表名称');
-      return;
     } else {
       formRef.value?.validate((errors) => {
         if (!errors) {

@@ -5,6 +5,9 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { crx } from '@crxjs/vite-plugin';
 import manifest from './manifest.config';
+import Compression from 'unplugin-compression/vite';
+import { name, version } from './package.json';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
@@ -33,6 +36,15 @@ export default defineConfig({
       resolvers: [NaiveUiResolver()],
     }),
     crx({ manifest }),
+    Compression({
+      formatter() {
+        return `${name}-${version}.zip`;
+      },
+      compressingOptions: {
+        ignoreBase: true,
+      },
+    }),
+    visualizer(),
   ],
   resolve: {
     alias: {
