@@ -1,12 +1,12 @@
-# naive-tailwind-template
+# URL 备忘录
 
-一个简单的 Naive UI + TailwindCSS 的模板
+一个简单的URL备忘录，用于临时记录的URL，方便快速打开
 
-一个本人很喜欢的技术栈，[Naive UI](https://www.naiveui.com/) + [TailwindCSS](https://tailwindcss.com/)，这个模板可以让你快速开始一个项目。
+感谢 [Bulk URL Opener](https://github.com/EuanRiggans/BulkURLOpener)，在使用了这个插件后感觉UI和操作不是很喜欢，所以~~手痒了~~做了这个插件。
 
-使用[unplugin-auto-import](https://github.com/antfu/unplugin-auto-import) + [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components)技术加持，自动导入不费力。
+## 技术栈
 
-~~PS：只是方便自己不用每次都搭建一次而已。~~
+[Vue](https://vuejs.org/) + [Naive UI](https://www.naiveui.com/) + [CRXJS](https://crxjs.dev/vite-plugin/)
 
 ## 推荐 IDE 设置
 
@@ -63,3 +63,11 @@ pnpm lint
 ```sh
 pnpm format
 ```
+
+## 许可证
+
+[MIT](https://opensource.org/licenses/MIT)
+
+## 隐私权政策
+
+本项目开源免费，不收集任何隐私数据。
