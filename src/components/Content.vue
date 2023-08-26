@@ -22,7 +22,7 @@
             @update:value="handleSelect"
           />
           <NSpace>
-            <NButton @click="handleOpenUrls"> 打开全部URL </NButton>
+            <NButton @click="handleBatchOpenUrl"> 打开全部URL </NButton>
             <NButton type="error" @click="handleDeleteList"> 删除选中列表 </NButton>
           </NSpace>
         </div>
@@ -41,7 +41,15 @@
           }"
         >
           <NInputGroup>
+            <NInputGroupLabel>URL：</NInputGroupLabel>
             <NInput v-model:value="item.url" clearable />
+            <NInputGroupLabel>备注：</NInputGroupLabel>
+            <NInput v-model:value="item.title" clearable />
+            <NButton quaternary type="info" @click="handleOpenUrl(index)">
+              <NIcon>
+                <ExportOutlined />
+              </NIcon>
+            </NButton>
             <NButton
               quaternary
               type="error"
@@ -71,17 +79,19 @@
 
 <script setup lang="ts">
   import type { SelectOption, FormInst, FormItemRule } from 'naive-ui';
-  import { MinusOutlined, PlusOutlined } from '@vicons/antd';
+  import { MinusOutlined, PlusOutlined, ExportOutlined } from '@vicons/antd';
 
   const message = useMessage();
   const selectValue = ref<null | string>(null);
   const urlListOptions = ref<SelectOption[]>([]);
   const dynamicForm = reactive({
     name: '',
-    urls: [{ url: '' }],
+    urls: [{ url: '', title: '' }],
   });
   const isNew = ref(true);
   const formRef = ref<FormInst>();
+  const urlReg =
+    /^(((ht|f)tps?):\/\/)([^!@#$%^&*?.\s-]([^!@#$%^&*?.\s]{0,63}[^!@#$%^&*?.\s])?\.)+[a-z]{2,6}\/?/;
 
   onMounted(() => {
     getCurrentUrlList();
@@ -92,16 +102,16 @@
     selectValue.value = null;
     dynamicForm.name = '';
     const tabs = await chrome.tabs.query({});
-    const urls: string[] = [];
+    const urls: { url: string; title: string }[] = [];
     tabs.forEach((tab) => {
-      if (tab.url) {
+      if (tab.url && tab.title) {
         if (!/^chrome/.test(tab.url)) {
-          urls.push(tab.url);
+          urls.push({ url: tab.url, title: tab.title });
         }
       }
     });
     if (urls.length) {
-      dynamicForm.urls = urls.map((url) => ({ url }));
+      dynamicForm.urls = urls;
     }
   }
 
@@ -113,14 +123,14 @@
   }
 
   function clearCurrentUrlList() {
-    dynamicForm.urls = [{ url: '' }];
+    dynamicForm.urls = [{ url: '', title: '' }];
     dynamicForm.name = '';
     isNew.value = true;
     selectValue.value = null;
   }
 
   function hanldeAddUrl() {
-    dynamicForm.urls.push({ url: '' });
+    dynamicForm.urls.push({ url: '', title: '' });
   }
 
   function handleDeleteUrl(index: number) {
@@ -128,9 +138,27 @@
     dynamicForm.urls.splice(index, 1);
   }
 
-  function handleOpenUrls() {
-    dynamicForm.urls.forEach((item) => {
-      chrome.tabs.create({ url: item.url, active: false });
+  function handleOpenUrl(index: number) {
+    if (!dynamicForm.urls[index].url || !urlReg.test(dynamicForm.urls[index].url)) {
+      message.error('请检查URL是否为空、格式是否正确');
+    } else {
+      openUrl(dynamicForm.urls[index].url);
+    }
+  }
+
+  function openUrl(url: string) {
+    chrome.tabs.create({ url, active: false });
+  }
+
+  function handleBatchOpenUrl() {
+    formRef.value?.validate((errors) => {
+      if (!errors) {
+        dynamicForm.urls.forEach((item) => {
+          openUrl(item.url);
+        });
+      } else {
+        message.error('请检查URL是否为空、格式是否正确');
+      }
     });
   }
 
@@ -150,7 +178,7 @@
               getOptions();
             });
         } else {
-          message.error('请检查是否为空、格式是否正确');
+          message.error('请检查URL是否为空、格式是否正确');
         }
       });
     }
@@ -175,7 +203,11 @@
     chrome.storage.local.get(val, (result) => {
       dynamicForm.name = val;
       // dynamicForm.urls = JSON.parse(result[val]);
-      dynamicForm.urls = result[val];
+      // 向下兼容
+      dynamicForm.urls = result[val].map((item: { url: string; title: string }) => ({
+        url: item.url,
+        title: item.title || '',
+      }));
       duplicateCheck();
     });
   }
@@ -195,11 +227,7 @@
   function validatorFunc(rule: FormItemRule, value: string) {
     if (!value) {
       return new Error('请输入URL');
-    } else if (
-      !/^(((ht|f)tps?):\/\/)([^!@#$%^&*?.\s-]([^!@#$%^&*?.\s]{0,63}[^!@#$%^&*?.\s])?\.)+[a-z]{2,6}\/?/.test(
-        value,
-      )
-    ) {
+    } else if (!urlReg.test(value)) {
       return new Error('请输入正确的URL');
     }
     return true;
