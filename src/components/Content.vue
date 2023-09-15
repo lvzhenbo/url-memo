@@ -90,8 +90,6 @@
   });
   const isNew = ref(true);
   const formRef = ref<FormInst>();
-  const urlReg =
-    /^(((ht|f)tps?):\/\/)([^!@#$%^&*?.\s-]([^!@#$%^&*?.\s]{0,63}[^!@#$%^&*?.\s])?\.)+[a-z]{2,6}\/?/;
 
   onMounted(() => {
     getCurrentUrlList();
@@ -105,7 +103,7 @@
     const urls: { url: string; title: string }[] = [];
     tabs.forEach((tab) => {
       if (tab.url && tab.title) {
-        if (!/^chrome/.test(tab.url)) {
+        if (isUrlValid(tab.url)) {
           urls.push({ url: tab.url, title: tab.title });
         }
       }
@@ -139,7 +137,7 @@
   }
 
   function handleOpenUrl(index: number) {
-    if (!dynamicForm.urls[index].url || !urlReg.test(dynamicForm.urls[index].url)) {
+    if (!dynamicForm.urls[index].url || !isUrlValid(dynamicForm.urls[index].url)) {
       message.error('请检查URL是否为空、格式是否正确');
     } else {
       openUrl(dynamicForm.urls[index].url);
@@ -227,10 +225,19 @@
   function validatorFunc(rule: FormItemRule, value: string) {
     if (!value) {
       return new Error('请输入URL');
-    } else if (!urlReg.test(value)) {
+    } else if (!isUrlValid(value)) {
       return new Error('请输入正确的URL');
     }
     return true;
+  }
+
+  function isUrlValid(url: string) {
+    try {
+      new URL(url);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 </script>
 
